@@ -112,6 +112,95 @@ a:hover { text-decoration: underline; }
 }
 .btn-secondary:hover { background: var(--bg-hover); }
 
+/* KPI Cards */
+.kpi-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.kpi-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+}
+
+.kpi-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.kpi-change {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.kpi-change.positive { color: var(--success-color); }
+.kpi-change.negative { color: var(--danger-color); }
+
+/* Product Tabs */
+.product-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+
+.product-tab {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.product-tab:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-card);
+}
+
+.product-tab.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+}
+
+.product-tab .tab-name {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.product-tab .tab-abbr {
+    display: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.product-tab.active .tab-name,
+.product-tab.active .tab-abbr {
+    color: white;
+}
+
 /* Chart Sections */
 .chart-section-main, .chart-section { margin-bottom: 0; }
 
@@ -224,6 +313,7 @@ a:hover { text-decoration: underline; }
     .charts-row { grid-template-columns: 1fr; }
     .header { flex-direction: column; text-align: center; }
     .header-left, .header-center, .header-right { width: 100%; justify-content: center; }
+    .product-tabs { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 600px) {
@@ -231,6 +321,9 @@ a:hover { text-decoration: underline; }
     .chart-body { min-height: 250px; }
     .chart-body.chart-tall { min-height: 300px; }
     .footer { flex-direction: column; text-align: center; }
+    .product-tab .tab-name { display: none; }
+    .product-tab .tab-abbr { display: block; }
+    .kpi-section { grid-template-columns: repeat(2, 1fr); }
 }
 
 .hidden { display: none !important; }

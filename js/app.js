@@ -51,6 +51,7 @@ const App = {
     },
 
     updateDashboard() {
+        UI.updateAllKpis(this.state.seriesData);
         Charts.updateAll(this.state.seriesData, this.state.selectedProduct);
     },
 

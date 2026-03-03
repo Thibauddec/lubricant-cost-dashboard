@@ -20,6 +20,62 @@ const Charts = {
     },
 
     /**
+     * Simple linear regression for prediction
+     * @param {Array} data - Array of {x: timestamp, y: value}
+     * @returns {Object} {slope, intercept}
+     */
+    linearRegression(data) {
+        const n = data.length;
+        if (n < 2) return { slope: 0, intercept: data[0]?.y || 0 };
+
+        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+        data.forEach((point, i) => {
+            sumX += i;
+            sumY += parseFloat(point.y);
+            sumXY += i * parseFloat(point.y);
+            sumX2 += i * i;
+        });
+
+        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+        return { slope, intercept };
+    },
+
+    /**
+     * Generate forecast data points
+     * @param {Array} historicalData - Historical data points
+     * @param {number} periods - Number of future periods
+     * @returns {Array} Forecast data points
+     */
+    generateForecast(historicalData, periods = 3) {
+        if (!historicalData || historicalData.length < 2) return [];
+
+        const { slope, intercept } = this.linearRegression(historicalData);
+        const lastIndex = historicalData.length - 1;
+        const lastDate = new Date(historicalData[lastIndex].x);
+        const forecast = [];
+
+        // Add last actual point as start of forecast
+        forecast.push({
+            x: historicalData[lastIndex].x,
+            y: historicalData[lastIndex].y
+        });
+
+        // Generate future points (monthly)
+        for (let i = 1; i <= periods; i++) {
+            const futureDate = new Date(lastDate);
+            futureDate.setMonth(futureDate.getMonth() + i);
+            const predictedY = intercept + slope * (lastIndex + i);
+            forecast.push({
+                x: futureDate.toISOString().split('T')[0],
+                y: Math.max(0, predictedY).toFixed(2) // Ensure non-negative
+            });
+        }
+
+        return forecast;
+    },
+
+    /**
      * Create product groups trend chart (main chart)
      * Shows weighted cost index for each product over time
      * @param {Object} seriesData - Raw series data
@@ -78,6 +134,7 @@ const Charts = {
             });
 
             if (dataPoints.length > 0) {
+                // Historical data (solid line)
                 datasets.push({
                     label: product.name,
                     data: dataPoints,
@@ -89,14 +146,29 @@ const Charts = {
                     tension: 0.3,
                     fill: false
                 });
+
+                // Forecast data (dotted line)
+                const forecast = this.generateForecast(dataPoints, 3);
+                if (forecast.length > 0) {
+                    datasets.push({
+                        label: product.name + ' (Forecast)',
+                        data: forecast,
+                        borderColor: product.color,
+                        borderWidth: 2,
+                        borderDash: [6, 4],
+                        pointRadius: 0,
+                        tension: 0.3,
+                        fill: false
+                    });
+                }
             }
         });
 
-        // Update legend
+        // Update legend (only show non-forecast items)
         const legend = document.getElementById('trendLegend');
         if (legend) {
             legend.innerHTML = '';
-            datasets.forEach(ds => {
+            datasets.filter(ds => !ds.label.includes('Forecast')).forEach(ds => {
                 const item = document.createElement('div');
                 item.className = 'legend-item';
                 item.innerHTML = `
@@ -105,6 +177,11 @@ const Charts = {
                 `;
                 legend.appendChild(item);
             });
+            // Add forecast note
+            const note = document.createElement('div');
+            note.className = 'legend-item';
+            note.innerHTML = '<span style="border-bottom: 2px dashed var(--text-muted); width: 14px; display: inline-block;"></span><span>Forecast</span>';
+            legend.appendChild(note);
         }
 
         this.instances.trend = new Chart(ctx, {

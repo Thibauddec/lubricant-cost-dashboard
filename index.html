@@ -25,18 +25,71 @@
                     <button class="range-btn" data-range="2Y">2Y</button>
                 </div>
             </div>
-            <div class="header-right">
-                <div class="product-filter">
-                    <label for="productSelect">Breakdown:</label>
-                    <select id="productSelect">
-                        <option value="GI">General Industrial</option>
-                        <option value="MWF">Metalworking Fluids</option>
-                        <option value="HighPerf">High Performance</option>
-                        <option value="Grease">Grease</option>
-                    </select>
-                </div>
-            </div>
         </header>
+
+        <!-- Product Group Tabs -->
+        <section class="product-tabs">
+            <button class="product-tab active" data-product="GI">
+                <span class="tab-name">General Industrial</span>
+                <span class="tab-abbr">GI</span>
+            </button>
+            <button class="product-tab" data-product="MWF">
+                <span class="tab-name">Metalworking Fluids</span>
+                <span class="tab-abbr">MWF</span>
+            </button>
+            <button class="product-tab" data-product="HighPerf">
+                <span class="tab-name">High Performance</span>
+                <span class="tab-abbr">HP</span>
+            </button>
+            <button class="product-tab" data-product="Grease">
+                <span class="tab-name">Grease</span>
+                <span class="tab-abbr">GRS</span>
+            </button>
+        </section>
+
+        <!-- KPI Cards -->
+        <section class="kpi-section">
+            <div class="kpi-card">
+                <div class="kpi-label">Crude Oil (Brent)</div>
+                <div class="kpi-value" id="crude-value">--</div>
+                <div class="kpi-change" id="crude-change">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Crude Oil (WTI)</div>
+                <div class="kpi-value" id="wti-value">--</div>
+                <div class="kpi-change" id="wti-change">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Base Oil PPI</div>
+                <div class="kpi-value" id="baseOil-value">--</div>
+                <div class="kpi-change" id="baseOil-change">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Chemical Additives</div>
+                <div class="kpi-value" id="additives-value">--</div>
+                <div class="kpi-change" id="additives-change">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Transport CPI</div>
+                <div class="kpi-value" id="transport-value">--</div>
+                <div class="kpi-change" id="transport-change">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Gasoline</div>
+                <div class="kpi-value" id="gasoline-value">--</div>
+                <div class="kpi-change" id="gasoline-change">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Manufacturing PPI</div>
+                <div class="kpi-value" id="labor-value">--</div>
+                <div class="kpi-change" id="labor-change">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Packaging PPI</div>
+                <div class="kpi-value" id="packaging-value">--</div>
+                <div class="kpi-change" id="packaging-change">--</div>
+            </div>
+        </section>
 
         <!-- Main Chart: Product Groups Over Time -->
         <section class="chart-section-main">
@@ -58,6 +111,7 @@
                     <h3>Cost Breakdown</h3>
                     <span class="chart-subtitle" id="breakdownProduct">General Industrial</span>
                 </div>
+                <input type="hidden" id="productSelect" value="GI">
                 <div class="chart-body">
                     <canvas id="breakdownChart"></canvas>
                 </div>

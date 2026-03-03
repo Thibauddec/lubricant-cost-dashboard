@@ -31,9 +31,17 @@ const UI = {
             });
         });
 
-        // Product filter
-        this.elements.productSelect?.addEventListener('change', (e) => {
-            if (window.App) App.setProduct(e.target.value);
+        // Product tabs
+        document.querySelectorAll('.product-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.product-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const product = tab.dataset.product;
+                if (this.elements.productSelect) {
+                    this.elements.productSelect.value = product;
+                }
+                if (window.App) App.setProduct(product);
+            });
         });
 
         // Refresh button
@@ -66,5 +74,33 @@ const UI = {
 
     getSelectedProduct() {
         return this.elements.productSelect?.value || 'GI';
+    },
+
+    updateKpiCard(factor, current, changePercent) {
+        const valueEl = document.getElementById(`${factor}-value`);
+        const changeEl = document.getElementById(`${factor}-change`);
+
+        if (valueEl && current !== null) {
+            valueEl.textContent = current;
+        }
+
+        if (changeEl && changePercent !== null) {
+            const change = parseFloat(changePercent);
+            const sign = change >= 0 ? '+' : '';
+            changeEl.textContent = `${sign}${change.toFixed(2)}%`;
+            changeEl.className = `kpi-change ${change >= 0 ? 'positive' : 'negative'}`;
+        }
+    },
+
+    updateAllKpis(seriesData) {
+        Object.entries(seriesData).forEach(([seriesId, data]) => {
+            const meta = Config.SERIES_META[seriesId];
+            if (meta && data && data.length >= 2) {
+                const current = data[data.length - 1].value;
+                const previous = data[0].value;
+                const changePercent = ((current - previous) / previous) * 100;
+                this.updateKpiCard(meta.factor, current.toFixed(2), changePercent);
+            }
+        });
     }
 };
