@@ -71,11 +71,14 @@ const App = {
 
             // Fetch all FRED series
             const seriesIds = Object.values(Config.SERIES);
+            console.log('Fetching series:', seriesIds);
+            console.log('Date range:', range.start, 'to', range.end);
             this.state.seriesData = await FredApi.fetchMultipleSeries(
                 seriesIds,
                 range.start,
                 range.end
             );
+            console.log('Fetched data:', this.state.seriesData);
 
             // Fetch exchange rate data
             try {

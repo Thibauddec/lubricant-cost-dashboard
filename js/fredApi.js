@@ -37,7 +37,9 @@ const FredApi = {
         });
 
         try {
-            const response = await fetch(`${Config.FRED_BASE_URL}?${params}`);
+            const url = `${Config.FRED_BASE_URL}?${params}`;
+            console.log('Fetching:', seriesId, url);
+            const response = await fetch(url);
 
             if (!response.ok) {
                 if (response.status === 400) {
@@ -47,6 +49,7 @@ const FredApi = {
             }
 
             const data = await response.json();
+            console.log('FRED response for', seriesId, ':', data);
 
             if (data.error_message) {
                 throw new Error(data.error_message);
