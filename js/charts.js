@@ -238,7 +238,7 @@ const Charts = {
                         padding: 12,
                         callbacks: {
                             title: (items) => items.length > 0 ? new Date(items[0].parsed.x).toLocaleDateString() : '',
-                            label: (context) => `${context.dataset.label}: ${context.parsed.y}`
+                            label: (context) => `${context.dataset.label}: ${parseFloat(context.parsed.y).toFixed(2)}`
                         }
                     }
                 },
@@ -251,7 +251,10 @@ const Charts = {
                     },
                     y: {
                         title: { display: true, text: 'Cost Index (Base = 100)' },
-                        grid: { color: '#334155' }
+                        grid: { color: '#334155' },
+                        ticks: {
+                            callback: (value) => parseFloat(value).toFixed(1)
+                        }
                     }
                 }
             }
@@ -376,7 +379,8 @@ const Charts = {
                     tooltip: {
                         backgroundColor: '#1e293b',
                         callbacks: {
-                            title: (items) => items.length > 0 ? new Date(items[0].parsed.x).toLocaleDateString() : ''
+                            title: (items) => items.length > 0 ? new Date(items[0].parsed.x).toLocaleDateString() : '',
+                            label: (context) => `${context.dataset.label}: ${parseFloat(context.parsed.y).toFixed(2)}`
                         }
                     }
                 },
@@ -388,7 +392,10 @@ const Charts = {
                     },
                     y: {
                         title: { display: true, text: 'Index (Base = 100)' },
-                        grid: { color: '#334155' }
+                        grid: { color: '#334155' },
+                        ticks: {
+                            callback: (value) => parseFloat(value).toFixed(1)
+                        }
                     }
                 }
             }
