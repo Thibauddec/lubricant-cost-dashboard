@@ -91,6 +91,21 @@
       "name": "Gasoline (Retail)",
       "seriesId": "GASREGW",
       "color": "#c0392b"
+    },
+    "crudeStocks": {
+      "name": "Crude Oil Stocks",
+      "seriesId": "WCESTUS1",
+      "color": "#2980b9"
+    },
+    "refineryUtil": {
+      "name": "Refinery Utilization",
+      "seriesId": "WGFUPUS2",
+      "color": "#27ae60"
+    },
+    "gasFutures": {
+      "name": "Gasoline Futures",
+      "seriesId": "DRGASNYH",
+      "color": "#e74c3c"
     }
   }
 }

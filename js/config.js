@@ -25,7 +25,12 @@ const Config = {
         STEEL_PPI: 'WPU101',
         PLASTIC_PPI: 'WPU072',
         LABOR_COST: 'CES0500000003',
-        INFLATION_CPI: 'CPIAUCSL'
+        INFLATION_CPI: 'CPIAUCSL',
+        // EIA Data (via FRED)
+        CRUDE_STOCKS: 'WCESTUS1',
+        REFINERY_UTIL: 'WGFUPUS2',
+        // Futures proxy (nearby month)
+        GASOLINE_FUTURES: 'DRGASNYH'
     },
 
     // Series metadata for display
@@ -101,6 +106,24 @@ const Config = {
             factor: 'inflation',
             unit: 'Index',
             color: '#d35400'
+        },
+        WCESTUS1: {
+            name: 'Crude Oil Stocks',
+            factor: 'crudeStocks',
+            unit: 'K Barrels',
+            color: '#2980b9'
+        },
+        WGFUPUS2: {
+            name: 'Refinery Utilization',
+            factor: 'refineryUtil',
+            unit: '%',
+            color: '#27ae60'
+        },
+        DRGASNYH: {
+            name: 'Gasoline Futures',
+            factor: 'gasFutures',
+            unit: '$/gallon',
+            color: '#e74c3c'
         }
     },
 
