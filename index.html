@@ -15,27 +15,19 @@
         <header class="header">
             <div class="header-left">
                 <h1>Lubricant Cost Dynamics</h1>
-                <span class="subtitle">Real-time cost factor tracking</span>
+                <span class="subtitle">Product group cost tracking over time</span>
             </div>
             <div class="header-center">
                 <div class="date-range-picker">
-                    <button class="range-btn" data-range="1M">1M</button>
                     <button class="range-btn" data-range="3M">3M</button>
                     <button class="range-btn" data-range="6M">6M</button>
                     <button class="range-btn active" data-range="1Y">1Y</button>
-                    <button class="range-btn" data-range="YTD">YTD</button>
-                    <button class="range-btn" data-range="custom">Custom</button>
-                </div>
-                <div class="custom-date-inputs" id="customDateInputs" style="display: none;">
-                    <input type="date" id="startDate">
-                    <span>to</span>
-                    <input type="date" id="endDate">
-                    <button class="btn btn-small" id="applyCustomDate">Apply</button>
+                    <button class="range-btn" data-range="2Y">2Y</button>
                 </div>
             </div>
             <div class="header-right">
                 <div class="product-filter">
-                    <label for="productSelect">Product:</label>
+                    <label for="productSelect">Breakdown:</label>
                     <select id="productSelect">
                         <option value="GI">General Industrial</option>
                         <option value="MWF">Metalworking Fluids</option>
@@ -46,86 +38,22 @@
             </div>
         </header>
 
-        <!-- KPI Cards Row -->
-        <section class="kpi-section">
-            <div class="kpi-card" data-factor="crude">
-                <div class="kpi-header">
-                    <span class="kpi-label">Crude Oil (Brent)</span>
-                    <span class="kpi-change positive" id="crude-change">--</span>
-                </div>
-                <div class="kpi-value" id="crude-value">--</div>
-                <div class="kpi-unit">$/barrel</div>
-            </div>
-            <div class="kpi-card" data-factor="wti">
-                <div class="kpi-header">
-                    <span class="kpi-label">Crude Oil (WTI)</span>
-                    <span class="kpi-change positive" id="wti-change">--</span>
-                </div>
-                <div class="kpi-value" id="wti-value">--</div>
-                <div class="kpi-unit">$/barrel</div>
-            </div>
-            <div class="kpi-card" data-factor="baseOil">
-                <div class="kpi-header">
-                    <span class="kpi-label">Base Oil PPI</span>
-                    <span class="kpi-change positive" id="baseOil-change">--</span>
-                </div>
-                <div class="kpi-value" id="baseOil-value">--</div>
-                <div class="kpi-unit">Index</div>
-            </div>
-            <div class="kpi-card" data-factor="additives">
-                <div class="kpi-header">
-                    <span class="kpi-label">Chemical Additives PPI</span>
-                    <span class="kpi-change positive" id="additives-change">--</span>
-                </div>
-                <div class="kpi-value" id="additives-value">--</div>
-                <div class="kpi-unit">Index</div>
-            </div>
-            <div class="kpi-card" data-factor="transport">
-                <div class="kpi-header">
-                    <span class="kpi-label">Transport Costs</span>
-                    <span class="kpi-change positive" id="transport-change">--</span>
-                </div>
-                <div class="kpi-value" id="transport-value">--</div>
-                <div class="kpi-unit">Index</div>
-            </div>
-            <div class="kpi-card" data-factor="gasoline">
-                <div class="kpi-header">
-                    <span class="kpi-label">Gasoline (Retail)</span>
-                    <span class="kpi-change positive" id="gasoline-change">--</span>
-                </div>
-                <div class="kpi-value" id="gasoline-value">--</div>
-                <div class="kpi-unit">$/gallon</div>
-            </div>
-            <div class="kpi-card" data-factor="labor">
-                <div class="kpi-header">
-                    <span class="kpi-label">Manufacturing PPI</span>
-                    <span class="kpi-change positive" id="labor-change">--</span>
-                </div>
-                <div class="kpi-value" id="labor-value">--</div>
-                <div class="kpi-unit">Index</div>
-            </div>
-            <div class="kpi-card" data-factor="eurusd">
-                <div class="kpi-header">
-                    <span class="kpi-label">EUR/USD Rate</span>
-                    <span class="kpi-change positive" id="eurusd-change">--</span>
-                </div>
-                <div class="kpi-value" id="eurusd-value">--</div>
-                <div class="kpi-unit">Exchange Rate</div>
-            </div>
-        </section>
-
-        <!-- Main Charts Row -->
-        <section class="charts-main">
-            <div class="chart-container chart-large">
+        <!-- Main Chart: Product Groups Over Time -->
+        <section class="chart-section-main">
+            <div class="chart-container chart-full">
                 <div class="chart-header">
-                    <h3>Cost Factor Trends</h3>
+                    <h3>Product Group Cost Index Over Time</h3>
                     <div class="chart-legend" id="trendLegend"></div>
                 </div>
-                <div class="chart-body">
+                <div class="chart-body chart-tall">
                     <canvas id="trendChart"></canvas>
                 </div>
             </div>
-            <div class="chart-container chart-small">
+        </section>
+
+        <!-- Secondary Charts Row -->
+        <section class="charts-row">
+            <div class="chart-container">
                 <div class="chart-header">
                     <h3>Cost Breakdown</h3>
                     <span class="chart-subtitle" id="breakdownProduct">General Industrial</span>
@@ -134,24 +62,25 @@
                     <canvas id="breakdownChart"></canvas>
                 </div>
             </div>
-        </section>
-
-        <!-- Secondary Charts Row -->
-        <section class="charts-secondary">
             <div class="chart-container">
                 <div class="chart-header">
-                    <h3>Year-over-Year Change</h3>
+                    <h3>Period Change by Product</h3>
                 </div>
                 <div class="chart-body">
                     <canvas id="yoyChart"></canvas>
                 </div>
             </div>
-            <div class="chart-container">
+        </section>
+
+        <!-- Raw Factors Chart -->
+        <section class="chart-section">
+            <div class="chart-container chart-full">
                 <div class="chart-header">
-                    <h3>Product Group Cost Index</h3>
+                    <h3>Raw Cost Factors</h3>
+                    <span class="chart-subtitle">Base Oil, Crude, Additives, Transport, etc.</span>
                 </div>
                 <div class="chart-body">
-                    <canvas id="productChart"></canvas>
+                    <canvas id="factorsChart"></canvas>
                 </div>
             </div>
         </section>
@@ -159,19 +88,18 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-left">
-                <span>Data Sources: </span>
-                <a href="https://fred.stlouisfed.org/" target="_blank">FRED (Federal Reserve)</a>
+                <span>Data: </span>
+                <a href="https://fred.stlouisfed.org/" target="_blank">FRED</a>
                 <span> | </span>
-                <a href="https://www.frankfurter.app/" target="_blank">Frankfurter (ECB rates)</a>
+                <a href="https://www.frankfurter.app/" target="_blank">Frankfurter</a>
             </div>
             <div class="footer-center">
-                <span id="lastUpdated">Last updated: --</span>
+                <span id="lastUpdated">Loading...</span>
             </div>
             <div class="footer-right">
                 <button class="btn btn-secondary" id="refreshData">
-                    <span class="refresh-icon">&#8635;</span> Refresh Data
+                    <span class="refresh-icon">&#8635;</span> Refresh
                 </button>
-                <button class="btn btn-secondary" id="clearCache">Clear Cache</button>
             </div>
         </footer>
     </div>
@@ -179,11 +107,8 @@
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner"></div>
-        <p>Loading data...</p>
+        <p id="loadingText">Loading data...</p>
     </div>
-
-    <!-- Error Toast -->
-    <div id="errorToast" class="toast error"></div>
 
     <!-- Scripts -->
     <script src="js/config.js"></script>

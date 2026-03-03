@@ -125,6 +125,9 @@ const Config = {
             case '1Y':
                 start.setFullYear(start.getFullYear() - 1);
                 break;
+            case '2Y':
+                start.setFullYear(start.getFullYear() - 2);
+                break;
             case 'YTD':
                 start = new Date(start.getFullYear(), 0, 1);
                 break;

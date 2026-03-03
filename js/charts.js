@@ -20,54 +20,92 @@ const Charts = {
     },
 
     /**
-     * Create the main trend line chart
-     * @param {Object} seriesData - Object with series data
+     * Create product groups trend chart (main chart)
+     * Shows weighted cost index for each product over time
+     * @param {Object} seriesData - Raw series data
      * @returns {Chart}
      */
-    createTrendChart(seriesData) {
+    createProductTrendChart(seriesData) {
         const ctx = document.getElementById('trendChart');
-        if (!ctx) return null;
+        if (!ctx || !this.costWeights) return null;
 
-        // Destroy existing chart
         if (this.instances.trend) {
             this.instances.trend.destroy();
         }
 
+        const products = this.costWeights.products;
+        const factors = this.costWeights.factors;
         const datasets = [];
-        const legend = document.getElementById('trendLegend');
-        legend.innerHTML = '';
 
-        // Create datasets for each series
-        Object.entries(seriesData).forEach(([seriesId, data]) => {
-            const meta = Config.SERIES_META[seriesId];
-            if (!meta || !data || data.length === 0) return;
+        // Get all unique dates from the data
+        let allDates = new Set();
+        Object.values(seriesData).forEach(data => {
+            if (data && data.length > 0) {
+                data.forEach(d => allDates.add(d.date));
+            }
+        });
+        allDates = Array.from(allDates).sort();
 
-            // Normalize data to index
-            const normalizedData = FredApi.normalizeToIndex(data);
+        // For each product, calculate weighted index over time
+        Object.entries(products).forEach(([productId, product]) => {
+            const dataPoints = [];
 
-            datasets.push({
-                label: meta.name,
-                data: normalizedData.map(d => ({ x: d.date, y: d.value })),
-                borderColor: meta.color,
-                backgroundColor: meta.color + '20',
-                borderWidth: 2,
-                pointRadius: 0,
-                pointHoverRadius: 4,
-                tension: 0.3,
-                fill: false
+            allDates.forEach(date => {
+                let weightedSum = 0;
+                let totalWeight = 0;
+
+                Object.entries(product.weights).forEach(([factor, weight]) => {
+                    const factorConfig = factors[factor];
+                    if (factorConfig && seriesData[factorConfig.seriesId]) {
+                        const seriesValues = seriesData[factorConfig.seriesId];
+                        const point = seriesValues.find(d => d.date === date);
+                        if (point) {
+                            // Normalize to first value in series
+                            const firstVal = seriesValues[0]?.value || point.value;
+                            const normalized = (point.value / firstVal) * 100;
+                            weightedSum += normalized * weight;
+                            totalWeight += weight;
+                        }
+                    }
+                });
+
+                if (totalWeight > 0) {
+                    dataPoints.push({
+                        x: date,
+                        y: (weightedSum / totalWeight).toFixed(2)
+                    });
+                }
             });
 
-            // Add legend item
-            const legendItem = document.createElement('div');
-            legendItem.className = 'legend-item';
-            legendItem.dataset.series = seriesId;
-            legendItem.innerHTML = `
-                <span class="legend-color" style="background-color: ${meta.color}"></span>
-                <span>${meta.name}</span>
-            `;
-            legendItem.addEventListener('click', () => this.toggleSeries('trend', seriesId));
-            legend.appendChild(legendItem);
+            if (dataPoints.length > 0) {
+                datasets.push({
+                    label: product.name,
+                    data: dataPoints,
+                    borderColor: product.color,
+                    backgroundColor: product.color + '20',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    tension: 0.3,
+                    fill: false
+                });
+            }
         });
+
+        // Update legend
+        const legend = document.getElementById('trendLegend');
+        if (legend) {
+            legend.innerHTML = '';
+            datasets.forEach(ds => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `
+                    <span class="legend-color" style="background-color: ${ds.borderColor}"></span>
+                    <span>${ds.label}</span>
+                `;
+                legend.appendChild(item);
+            });
+        }
 
         this.instances.trend = new Chart(ctx, {
             type: 'line',
@@ -80,9 +118,7 @@ const Charts = {
                     intersect: false
                 },
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
                         backgroundColor: '#1e293b',
                         titleColor: '#f8fafc',
@@ -91,42 +127,21 @@ const Charts = {
                         borderWidth: 1,
                         padding: 12,
                         callbacks: {
-                            title: (items) => {
-                                if (items.length > 0) {
-                                    return new Date(items[0].parsed.x).toLocaleDateString();
-                                }
-                                return '';
-                            },
-                            label: (context) => {
-                                return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
-                            }
+                            title: (items) => items.length > 0 ? new Date(items[0].parsed.x).toLocaleDateString() : '',
+                            label: (context) => `${context.dataset.label}: ${context.parsed.y}`
                         }
                     }
                 },
                 scales: {
                     x: {
                         type: 'time',
-                        time: {
-                            unit: 'month',
-                            displayFormats: {
-                                month: 'MMM yyyy'
-                            }
-                        },
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            maxTicksLimit: 12
-                        }
+                        time: { unit: 'month', displayFormats: { month: 'MMM yyyy' } },
+                        grid: { display: false },
+                        ticks: { maxTicksLimit: 12 }
                     },
                     y: {
-                        title: {
-                            display: true,
-                            text: 'Index (Base = 100)'
-                        },
-                        grid: {
-                            color: '#334155'
-                        }
+                        title: { display: true, text: 'Cost Index (Base = 100)' },
+                        grid: { color: '#334155' }
                     }
                 }
             }
@@ -138,14 +153,12 @@ const Charts = {
     /**
      * Create cost breakdown donut chart
      * @param {string} productId - Product identifier
-     * @param {Object} latestValues - Latest values for each factor
      * @returns {Chart}
      */
-    createBreakdownChart(productId, latestValues) {
+    createBreakdownChart(productId) {
         const ctx = document.getElementById('breakdownChart');
         if (!ctx || !this.costWeights) return null;
 
-        // Destroy existing chart
         if (this.instances.breakdown) {
             this.instances.breakdown.destroy();
         }
@@ -153,11 +166,8 @@ const Charts = {
         const product = this.costWeights.products[productId];
         if (!product) return null;
 
-        // Update subtitle
         const subtitle = document.getElementById('breakdownProduct');
-        if (subtitle) {
-            subtitle.textContent = product.name;
-        }
+        if (subtitle) subtitle.textContent = product.name;
 
         const labels = [];
         const data = [];
@@ -191,23 +201,11 @@ const Charts = {
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: {
-                            padding: 15,
-                            usePointStyle: true,
-                            pointStyle: 'circle'
-                        }
+                        labels: { padding: 15, usePointStyle: true, pointStyle: 'circle' }
                     },
                     tooltip: {
                         backgroundColor: '#1e293b',
-                        titleColor: '#f8fafc',
-                        bodyColor: '#94a3b8',
-                        borderColor: '#475569',
-                        borderWidth: 1,
-                        callbacks: {
-                            label: (context) => {
-                                return `${context.label}: ${context.parsed}%`;
-                            }
-                        }
+                        callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}%` }
                     }
                 }
             }
@@ -217,32 +215,122 @@ const Charts = {
     },
 
     /**
-     * Create year-over-year comparison bar chart
-     * @param {Object} seriesData - Series data with YoY calculations
+     * Create raw cost factors trend chart
+     * @param {Object} seriesData - Series data
+     * @returns {Chart}
+     */
+    createFactorsTrendChart(seriesData) {
+        const ctx = document.getElementById('factorsChart');
+        if (!ctx) return null;
+
+        if (this.instances.factors) {
+            this.instances.factors.destroy();
+        }
+
+        const datasets = [];
+
+        Object.entries(seriesData).forEach(([seriesId, data]) => {
+            const meta = Config.SERIES_META[seriesId];
+            if (!meta || !data || data.length === 0) return;
+
+            // Normalize to index
+            const firstVal = data[0].value;
+            const normalized = data.map(d => ({
+                x: d.date,
+                y: ((d.value / firstVal) * 100).toFixed(2)
+            }));
+
+            datasets.push({
+                label: meta.name,
+                data: normalized,
+                borderColor: meta.color,
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.3,
+                fill: false
+            });
+        });
+
+        this.instances.factors = new Chart(ctx, {
+            type: 'line',
+            data: { datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { usePointStyle: true, pointStyle: 'line', padding: 15 }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        callbacks: {
+                            title: (items) => items.length > 0 ? new Date(items[0].parsed.x).toLocaleDateString() : ''
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: { unit: 'month' },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: { display: true, text: 'Index (Base = 100)' },
+                        grid: { color: '#334155' }
+                    }
+                }
+            }
+        });
+
+        return this.instances.factors;
+    },
+
+    /**
+     * Create YoY comparison bar chart
+     * @param {Object} seriesData - Series data
      * @returns {Chart}
      */
     createYoYChart(seriesData) {
         const ctx = document.getElementById('yoyChart');
-        if (!ctx) return null;
+        if (!ctx || !this.costWeights) return null;
 
-        // Destroy existing chart
         if (this.instances.yoy) {
             this.instances.yoy.destroy();
         }
 
+        const products = this.costWeights.products;
+        const factors = this.costWeights.factors;
         const labels = [];
         const data = [];
         const colors = [];
 
-        Object.entries(seriesData).forEach(([seriesId, seriesValues]) => {
-            const meta = Config.SERIES_META[seriesId];
-            if (!meta || !seriesValues || seriesValues.length === 0) return;
+        // Calculate YoY for each product
+        Object.entries(products).forEach(([productId, product]) => {
+            let currentWeighted = 0;
+            let yearAgoWeighted = 0;
+            let totalWeight = 0;
 
-            const yoyChange = FredApi.calculateYoYChange(seriesValues);
-            if (yoyChange !== null) {
-                labels.push(meta.name);
-                data.push(parseFloat(yoyChange));
-                colors.push(parseFloat(yoyChange) >= 0 ? '#22c55e' : '#ef4444');
+            Object.entries(product.weights).forEach(([factor, weight]) => {
+                const factorConfig = factors[factor];
+                if (factorConfig && seriesData[factorConfig.seriesId]) {
+                    const seriesValues = seriesData[factorConfig.seriesId];
+                    if (seriesValues.length > 0) {
+                        const current = seriesValues[seriesValues.length - 1].value;
+                        const yearAgo = seriesValues[0].value;
+                        currentWeighted += current * weight;
+                        yearAgoWeighted += yearAgo * weight;
+                        totalWeight += weight;
+                    }
+                }
+            });
+
+            if (totalWeight > 0 && yearAgoWeighted > 0) {
+                const yoyChange = ((currentWeighted - yearAgoWeighted) / yearAgoWeighted) * 100;
+                labels.push(product.name);
+                data.push(yoyChange.toFixed(2));
+                colors.push(yoyChange >= 0 ? '#22c55e' : '#ef4444');
             }
         });
 
@@ -254,47 +342,28 @@ const Charts = {
                     label: 'YoY Change (%)',
                     data,
                     backgroundColor: colors,
-                    borderColor: colors,
-                    borderWidth: 1,
                     borderRadius: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'y',
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#1e293b',
-                        titleColor: '#f8fafc',
-                        bodyColor: '#94a3b8',
-                        borderColor: '#475569',
-                        borderWidth: 1,
                         callbacks: {
-                            label: (context) => {
-                                const value = context.parsed.x;
-                                const sign = value >= 0 ? '+' : '';
-                                return `${sign}${value.toFixed(2)}%`;
+                            label: (ctx) => {
+                                const val = ctx.parsed.y;
+                                return `${val >= 0 ? '+' : ''}${val}%`;
                             }
                         }
                     }
                 },
                 scales: {
-                    x: {
-                        grid: {
-                            color: '#334155'
-                        },
-                        ticks: {
-                            callback: (value) => `${value}%`
-                        }
-                    },
+                    x: { grid: { display: false } },
                     y: {
-                        grid: {
-                            display: false
-                        }
+                        grid: { color: '#334155' },
+                        ticks: { callback: (v) => `${v}%` }
                     }
                 }
             }
@@ -304,145 +373,15 @@ const Charts = {
     },
 
     /**
-     * Create product group cost comparison chart
-     * @param {Object} seriesData - Series data
-     * @returns {Chart}
-     */
-    createProductChart(seriesData) {
-        const ctx = document.getElementById('productChart');
-        if (!ctx || !this.costWeights) return null;
-
-        // Destroy existing chart
-        if (this.instances.product) {
-            this.instances.product.destroy();
-        }
-
-        const products = this.costWeights.products;
-        const labels = [];
-        const data = [];
-        const colors = [];
-
-        // Calculate weighted cost index for each product
-        Object.entries(products).forEach(([productId, product]) => {
-            let weightedIndex = 0;
-            let totalWeight = 0;
-
-            Object.entries(product.weights).forEach(([factor, weight]) => {
-                const factorConfig = this.costWeights.factors[factor];
-                if (factorConfig && seriesData[factorConfig.seriesId]) {
-                    const seriesValues = seriesData[factorConfig.seriesId];
-                    if (seriesValues && seriesValues.length > 0) {
-                        const normalized = FredApi.normalizeToIndex(seriesValues);
-                        const latest = normalized[normalized.length - 1].value;
-                        weightedIndex += latest * weight;
-                        totalWeight += weight;
-                    }
-                }
-            });
-
-            if (totalWeight > 0) {
-                labels.push(product.name);
-                data.push((weightedIndex / totalWeight).toFixed(2));
-                colors.push(product.color);
-            }
-        });
-
-        this.instances.product = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Cost Index',
-                    data,
-                    backgroundColor: colors,
-                    borderColor: colors.map(c => c),
-                    borderWidth: 1,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: '#1e293b',
-                        titleColor: '#f8fafc',
-                        bodyColor: '#94a3b8',
-                        borderColor: '#475569',
-                        borderWidth: 1,
-                        callbacks: {
-                            label: (context) => {
-                                return `Cost Index: ${context.parsed.y}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    },
-                    y: {
-                        beginAtZero: false,
-                        min: 90,
-                        title: {
-                            display: true,
-                            text: 'Weighted Cost Index'
-                        },
-                        grid: {
-                            color: '#334155'
-                        }
-                    }
-                }
-            }
-        });
-
-        return this.instances.product;
-    },
-
-    /**
-     * Toggle series visibility in a chart
-     * @param {string} chartName - Chart instance name
-     * @param {string} seriesId - Series ID to toggle
-     */
-    toggleSeries(chartName, seriesId) {
-        const chart = this.instances[chartName];
-        if (!chart) return;
-
-        const meta = Config.SERIES_META[seriesId];
-        if (!meta) return;
-
-        // Find dataset index
-        const datasetIndex = chart.data.datasets.findIndex(ds => ds.label === meta.name);
-        if (datasetIndex === -1) return;
-
-        // Toggle visibility
-        const isHidden = chart.getDatasetMeta(datasetIndex).hidden;
-        chart.getDatasetMeta(datasetIndex).hidden = !isHidden;
-
-        // Update legend item
-        const legendItem = document.querySelector(`.legend-item[data-series="${seriesId}"]`);
-        if (legendItem) {
-            legendItem.classList.toggle('disabled', !isHidden);
-        }
-
-        chart.update();
-    },
-
-    /**
-     * Update all charts with new data
+     * Update all charts
      * @param {Object} seriesData - All series data
      * @param {string} productId - Selected product ID
      */
     updateAll(seriesData, productId) {
-        this.createTrendChart(seriesData);
-        this.createBreakdownChart(productId, seriesData);
+        this.createProductTrendChart(seriesData);
+        this.createBreakdownChart(productId);
+        this.createFactorsTrendChart(seriesData);
         this.createYoYChart(seriesData);
-        this.createProductChart(seriesData);
     },
 
     /**
