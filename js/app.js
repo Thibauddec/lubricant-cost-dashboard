@@ -29,14 +29,7 @@ const App = {
         // Initialize charts
         await Charts.init(this.state.costWeights);
 
-        // Check for API key
-        if (!Config.hasApiKey()) {
-            UI.showModal();
-            UI.hideLoading();
-            return;
-        }
-
-        // Load data
+        // Load data (API key is pre-configured)
         await this.loadData();
     },
 
