@@ -6,6 +6,9 @@ const Config = {
     FRED_BASE_URL: 'https://api.stlouisfed.org/fred/series/observations',
     FRANKFURTER_BASE_URL: 'https://api.frankfurter.app',
 
+    // CORS Proxy (needed for GitHub Pages)
+    CORS_PROXY: 'https://corsproxy.io/?',
+
     // Default FRED API Key
     DEFAULT_API_KEY: '0b72c304bd2b4a722908f145656c8ae6',
 

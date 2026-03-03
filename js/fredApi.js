@@ -37,8 +37,9 @@ const FredApi = {
         });
 
         try {
-            const url = `${Config.FRED_BASE_URL}?${params}`;
-            console.log('Fetching:', seriesId, url);
+            const baseUrl = `${Config.FRED_BASE_URL}?${params}`;
+            const url = Config.CORS_PROXY ? `${Config.CORS_PROXY}${encodeURIComponent(baseUrl)}` : baseUrl;
+            console.log('Fetching:', seriesId);
             const response = await fetch(url);
 
             if (!response.ok) {
