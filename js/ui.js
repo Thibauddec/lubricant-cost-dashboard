@@ -62,8 +62,8 @@ const UI = {
 
             if (slider && valueDisplay) {
                 slider.addEventListener('input', () => {
-                    const val = slider.value;
-                    valueDisplay.textContent = `${val > 0 ? '+' : ''}${val}%`;
+                    const val = parseInt(slider.value);
+                    valueDisplay.textContent = `${val > 0 ? '+' : ''}${val.toFixed(0)}%`;
                     valueDisplay.style.color = val > 0 ? '#ef4444' : val < 0 ? '#22c55e' : '#94a3b8';
                     this.updateScenarioResults();
                 });

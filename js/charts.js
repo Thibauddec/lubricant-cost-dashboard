@@ -436,8 +436,8 @@ const Charts = {
                     tooltip: {
                         callbacks: {
                             label: (ctx) => {
-                                const val = ctx.parsed.y;
-                                return `${val >= 0 ? '+' : ''}${val}%`;
+                                const val = parseFloat(ctx.parsed.y).toFixed(2);
+                                return `${parseFloat(val) >= 0 ? '+' : ''}${val}%`;
                             }
                         }
                     }
