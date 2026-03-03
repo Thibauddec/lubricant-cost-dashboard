@@ -446,7 +446,7 @@ const Charts = {
                     x: { grid: { display: false } },
                     y: {
                         grid: { color: '#334155' },
-                        ticks: { callback: (v) => `${v}%` }
+                        ticks: { callback: (v) => `${parseFloat(v).toFixed(2)}%` }
                     }
                 }
             }
