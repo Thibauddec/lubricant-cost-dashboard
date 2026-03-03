@@ -48,6 +48,66 @@ const UI = {
         this.elements.refreshBtn?.addEventListener('click', () => {
             if (window.App) App.refreshData();
         });
+
+        // Scenario sliders
+        this.setupScenarioControls();
+    },
+
+    setupScenarioControls() {
+        const sliders = ['Crude', 'Additives', 'Transport', 'Labor'];
+
+        sliders.forEach(name => {
+            const slider = document.getElementById(`scenario${name}`);
+            const valueDisplay = document.getElementById(`scenario${name}Value`);
+
+            if (slider && valueDisplay) {
+                slider.addEventListener('input', () => {
+                    const val = slider.value;
+                    valueDisplay.textContent = `${val > 0 ? '+' : ''}${val}%`;
+                    valueDisplay.style.color = val > 0 ? '#ef4444' : val < 0 ? '#22c55e' : '#94a3b8';
+                    this.updateScenarioResults();
+                });
+            }
+        });
+
+        // Reset button
+        const resetBtn = document.getElementById('resetScenario');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                sliders.forEach(name => {
+                    const slider = document.getElementById(`scenario${name}`);
+                    const valueDisplay = document.getElementById(`scenario${name}Value`);
+                    if (slider) slider.value = 0;
+                    if (valueDisplay) {
+                        valueDisplay.textContent = '0%';
+                        valueDisplay.style.color = '#94a3b8';
+                    }
+                });
+                this.updateScenarioResults();
+            });
+        }
+    },
+
+    updateScenarioResults() {
+        const changes = {
+            crude: parseInt(document.getElementById('scenarioCrude')?.value || 0),
+            additives: parseInt(document.getElementById('scenarioAdditives')?.value || 0),
+            transport: parseInt(document.getElementById('scenarioTransport')?.value || 0),
+            labor: parseInt(document.getElementById('scenarioLabor')?.value || 0)
+        };
+
+        if (window.App && App.state.costWeights) {
+            const impacts = Forecast.calculateScenarioImpact(changes, App.state.costWeights);
+
+            Object.entries(impacts).forEach(([productId, impact]) => {
+                const el = document.getElementById(`scenario${productId}`);
+                if (el) {
+                    const val = parseFloat(impact);
+                    el.textContent = `${val > 0 ? '+' : ''}${impact}%`;
+                    el.className = `result-value ${val > 0 ? 'positive' : val < 0 ? 'negative' : ''}`;
+                }
+            });
+        }
     },
 
     showLoading(text = 'Loading data...') {

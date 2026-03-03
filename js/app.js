@@ -3,7 +3,7 @@
  */
 const App = {
     state: {
-        dateRange: '1Y',
+        dateRange: '5Y',
         selectedProduct: 'GI',
         seriesData: {},
         costWeights: null

@@ -150,12 +150,42 @@ const Charts = {
                     fill: false
                 });
 
-                // Forecast data (dotted line)
-                const forecast = this.generateForecast(dataPoints, 3);
-                if (forecast.length > 0) {
+                // Advanced ARIMA forecast with confidence bands
+                const forecastResult = Forecast.arimaForecast(
+                    dataPoints.map(d => ({ date: d.x, value: parseFloat(d.y) })),
+                    6,
+                    this.sentimentMultiplier
+                );
+
+                if (forecastResult.forecast.length > 0) {
+                    // Confidence band (fill area)
+                    if (forecastResult.confidenceUpper && forecastResult.confidenceLower) {
+                        datasets.push({
+                            label: product.name + ' (Confidence)',
+                            data: forecastResult.confidenceUpper,
+                            borderColor: 'transparent',
+                            backgroundColor: product.color + '15',
+                            borderWidth: 0,
+                            pointRadius: 0,
+                            tension: 0.3,
+                            fill: '+1'
+                        });
+                        datasets.push({
+                            label: product.name + ' (Lower)',
+                            data: forecastResult.confidenceLower,
+                            borderColor: 'transparent',
+                            backgroundColor: 'transparent',
+                            borderWidth: 0,
+                            pointRadius: 0,
+                            tension: 0.3,
+                            fill: false
+                        });
+                    }
+
+                    // Forecast line (dotted)
                     datasets.push({
                         label: product.name + ' (Forecast)',
-                        data: forecast,
+                        data: forecastResult.forecast,
                         borderColor: product.color,
                         borderWidth: 2,
                         borderDash: [6, 4],
