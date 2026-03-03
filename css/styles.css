@@ -152,9 +152,10 @@ a:hover { text-decoration: underline; }
     justify-content: space-between;
     align-items: flex-end;
     gap: 0.5rem;
+    overflow: hidden;
 }
 
-.kpi-values { flex: 1; }
+.kpi-values { flex: 1; min-width: 0; }
 
 .kpi-value {
     font-size: 1.25rem;
@@ -356,11 +357,12 @@ a:hover { text-decoration: underline; }
 
     /* KPI Cards */
     .kpi-section { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-    .kpi-card { padding: 0.75rem; }
-    .kpi-label { font-size: 0.6rem; margin-bottom: 0.25rem; }
-    .kpi-value { font-size: 1rem; }
-    .kpi-change { font-size: 0.65rem; }
-    .kpi-spark { width: 45px; height: 25px; }
+    .kpi-card { padding: 0.6rem; overflow: hidden; }
+    .kpi-label { font-size: 0.55rem; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kpi-main { gap: 0.25rem; }
+    .kpi-value { font-size: 0.9rem; }
+    .kpi-change { font-size: 0.6rem; }
+    .kpi-spark { width: 40px; height: 22px; min-width: 40px; }
 
     /* Product Tabs */
     .product-tabs { gap: 0.5rem; }
@@ -401,7 +403,10 @@ a:hover { text-decoration: underline; }
 
 /* Responsive - Very Small Mobile */
 @media (max-width: 380px) {
-    .kpi-section { grid-template-columns: 1fr; }
+    .kpi-section { grid-template-columns: repeat(2, 1fr); }
+    .kpi-card { padding: 0.5rem; }
+    .kpi-spark { width: 35px; height: 20px; min-width: 35px; }
+    .kpi-value { font-size: 0.85rem; }
     .product-tabs { grid-template-columns: repeat(2, 1fr); }
     .scenario-controls { grid-template-columns: 1fr; }
     .scenario-results { grid-template-columns: repeat(2, 1fr); }
