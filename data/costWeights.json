@@ -1,0 +1,96 @@
+{
+  "products": {
+    "GI": {
+      "name": "General Industrial",
+      "weights": {
+        "baseOil": 0.45,
+        "additives": 0.20,
+        "crude": 0.15,
+        "transport": 0.08,
+        "labor": 0.07,
+        "packaging": 0.05
+      },
+      "color": "#3498db"
+    },
+    "MWF": {
+      "name": "Metalworking Fluids",
+      "weights": {
+        "baseOil": 0.35,
+        "additives": 0.30,
+        "crude": 0.15,
+        "transport": 0.08,
+        "labor": 0.07,
+        "packaging": 0.05
+      },
+      "color": "#e74c3c"
+    },
+    "HighPerf": {
+      "name": "High Performance Lubes",
+      "weights": {
+        "baseOil": 0.30,
+        "additives": 0.40,
+        "crude": 0.10,
+        "transport": 0.08,
+        "labor": 0.07,
+        "packaging": 0.05
+      },
+      "color": "#2ecc71"
+    },
+    "Grease": {
+      "name": "Grease",
+      "weights": {
+        "baseOil": 0.40,
+        "additives": 0.25,
+        "crude": 0.15,
+        "transport": 0.08,
+        "labor": 0.07,
+        "packaging": 0.05
+      },
+      "color": "#9b59b6"
+    }
+  },
+  "factors": {
+    "baseOil": {
+      "name": "Base Oil",
+      "color": "#3498db",
+      "seriesId": "PCU324191324191"
+    },
+    "additives": {
+      "name": "Chemical Additives",
+      "color": "#e74c3c",
+      "seriesId": "PCU325325"
+    },
+    "crude": {
+      "name": "Crude Oil (Brent)",
+      "color": "#f39c12",
+      "seriesId": "DCOILBRENTEU"
+    },
+    "transport": {
+      "name": "Transport Costs",
+      "color": "#1abc9c",
+      "seriesId": "CPIUTRNS"
+    },
+    "labor": {
+      "name": "Labor (Manufacturing)",
+      "color": "#9b59b6",
+      "seriesId": "PCUOMFGOMFG"
+    },
+    "packaging": {
+      "name": "Packaging",
+      "color": "#34495e",
+      "seriesId": "PCU322322"
+    }
+  },
+  "additionalSeries": {
+    "wti": {
+      "name": "Crude Oil (WTI)",
+      "seriesId": "DCOILWTICO",
+      "color": "#e67e22"
+    },
+    "gasoline": {
+      "name": "Gasoline (Retail)",
+      "seriesId": "GASREGW",
+      "color": "#c0392b"
+    }
+  }
+}

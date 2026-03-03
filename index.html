@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lubricant Cost Dynamics Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body>
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="modal">
+        <div class="modal-content">
+            <h2>FRED API Key Required</h2>
+            <p>This dashboard uses the Federal Reserve Economic Data (FRED) API.</p>
+            <p>Get your free API key at: <a href="https://fred.stlouisfed.org/docs/api/api_key.html" target="_blank">FRED API Key Request</a></p>
+            <input type="text" id="apiKeyInput" placeholder="Enter your FRED API key">
+            <button id="saveApiKey" class="btn btn-primary">Save & Continue</button>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Lubricant Cost Dynamics</h1>
+                <span class="subtitle">Real-time cost factor tracking</span>
+            </div>
+            <div class="header-center">
+                <div class="date-range-picker">
+                    <button class="range-btn" data-range="1M">1M</button>
+                    <button class="range-btn" data-range="3M">3M</button>
+                    <button class="range-btn" data-range="6M">6M</button>
+                    <button class="range-btn active" data-range="1Y">1Y</button>
+                    <button class="range-btn" data-range="YTD">YTD</button>
+                    <button class="range-btn" data-range="custom">Custom</button>
+                </div>
+                <div class="custom-date-inputs" id="customDateInputs" style="display: none;">
+                    <input type="date" id="startDate">
+                    <span>to</span>
+                    <input type="date" id="endDate">
+                    <button class="btn btn-small" id="applyCustomDate">Apply</button>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="product-filter">
+                    <label for="productSelect">Product:</label>
+                    <select id="productSelect">
+                        <option value="GI">General Industrial</option>
+                        <option value="MWF">Metalworking Fluids</option>
+                        <option value="HighPerf">High Performance</option>
+                        <option value="Grease">Grease</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- KPI Cards Row -->
+        <section class="kpi-section">
+            <div class="kpi-card" data-factor="crude">
+                <div class="kpi-header">
+                    <span class="kpi-label">Crude Oil (Brent)</span>
+                    <span class="kpi-change positive" id="crude-change">--</span>
+                </div>
+                <div class="kpi-value" id="crude-value">--</div>
+                <div class="kpi-unit">$/barrel</div>
+            </div>
+            <div class="kpi-card" data-factor="wti">
+                <div class="kpi-header">
+                    <span class="kpi-label">Crude Oil (WTI)</span>
+                    <span class="kpi-change positive" id="wti-change">--</span>
+                </div>
+                <div class="kpi-value" id="wti-value">--</div>
+                <div class="kpi-unit">$/barrel</div>
+            </div>
+            <div class="kpi-card" data-factor="baseOil">
+                <div class="kpi-header">
+                    <span class="kpi-label">Base Oil PPI</span>
+                    <span class="kpi-change positive" id="baseOil-change">--</span>
+                </div>
+                <div class="kpi-value" id="baseOil-value">--</div>
+                <div class="kpi-unit">Index</div>
+            </div>
+            <div class="kpi-card" data-factor="additives">
+                <div class="kpi-header">
+                    <span class="kpi-label">Chemical Additives PPI</span>
+                    <span class="kpi-change positive" id="additives-change">--</span>
+                </div>
+                <div class="kpi-value" id="additives-value">--</div>
+                <div class="kpi-unit">Index</div>
+            </div>
+            <div class="kpi-card" data-factor="transport">
+                <div class="kpi-header">
+                    <span class="kpi-label">Transport Costs</span>
+                    <span class="kpi-change positive" id="transport-change">--</span>
+                </div>
+                <div class="kpi-value" id="transport-value">--</div>
+                <div class="kpi-unit">Index</div>
+            </div>
+            <div class="kpi-card" data-factor="gasoline">
+                <div class="kpi-header">
+                    <span class="kpi-label">Gasoline (Retail)</span>
+                    <span class="kpi-change positive" id="gasoline-change">--</span>
+                </div>
+                <div class="kpi-value" id="gasoline-value">--</div>
+                <div class="kpi-unit">$/gallon</div>
+            </div>
+            <div class="kpi-card" data-factor="labor">
+                <div class="kpi-header">
+                    <span class="kpi-label">Manufacturing PPI</span>
+                    <span class="kpi-change positive" id="labor-change">--</span>
+                </div>
+                <div class="kpi-value" id="labor-value">--</div>
+                <div class="kpi-unit">Index</div>
+            </div>
+            <div class="kpi-card" data-factor="eurusd">
+                <div class="kpi-header">
+                    <span class="kpi-label">EUR/USD Rate</span>
+                    <span class="kpi-change positive" id="eurusd-change">--</span>
+                </div>
+                <div class="kpi-value" id="eurusd-value">--</div>
+                <div class="kpi-unit">Exchange Rate</div>
+            </div>
+        </section>
+
+        <!-- Main Charts Row -->
+        <section class="charts-main">
+            <div class="chart-container chart-large">
+                <div class="chart-header">
+                    <h3>Cost Factor Trends</h3>
+                    <div class="chart-legend" id="trendLegend"></div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container chart-small">
+                <div class="chart-header">
+                    <h3>Cost Breakdown</h3>
+                    <span class="chart-subtitle" id="breakdownProduct">General Industrial</span>
+                </div>
+                <div class="chart-body">
+                    <canvas id="breakdownChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Secondary Charts Row -->
+        <section class="charts-secondary">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Year-over-Year Change</h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="yoyChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Product Group Cost Index</h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="productChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-left">
+                <span>Data Sources: </span>
+                <a href="https://fred.stlouisfed.org/" target="_blank">FRED (Federal Reserve)</a>
+                <span> | </span>
+                <a href="https://www.frankfurter.app/" target="_blank">Frankfurter (ECB rates)</a>
+            </div>
+            <div class="footer-center">
+                <span id="lastUpdated">Last updated: --</span>
+            </div>
+            <div class="footer-right">
+                <button class="btn btn-secondary" id="refreshData">
+                    <span class="refresh-icon">&#8635;</span> Refresh Data
+                </button>
+                <button class="btn btn-secondary" id="clearCache">Clear Cache</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading data...</p>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast" class="toast error"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/fredApi.js"></script>
+    <script src="js/frankfurterApi.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
