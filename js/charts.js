@@ -137,84 +137,50 @@ const Charts = {
             });
 
             if (dataPoints.length > 0) {
-                // Historical data (solid line)
+                // Historical data (solid line) - thinner for cleaner look
                 datasets.push({
                     label: product.name,
                     data: dataPoints,
                     borderColor: product.color,
-                    backgroundColor: product.color + '20',
-                    borderWidth: 3,
+                    borderWidth: 2,
                     pointRadius: 0,
-                    pointHoverRadius: 5,
-                    tension: 0.3,
+                    pointHoverRadius: 4,
+                    tension: 0.4,
                     fill: false
                 });
 
-                // Advanced ARIMA forecast with confidence bands
+                // Simple forecast (dotted line only, no confidence bands)
                 const forecastResult = Forecast.arimaForecast(
                     dataPoints.map(d => ({ date: d.x, value: parseFloat(d.y) })),
-                    6,
+                    3, // Reduced to 3 months
                     this.sentimentMultiplier
                 );
 
-                if (forecastResult.forecast.length > 0) {
-                    // Confidence band (fill area)
-                    if (forecastResult.confidenceUpper && forecastResult.confidenceLower) {
-                        datasets.push({
-                            label: product.name + ' (Confidence)',
-                            data: forecastResult.confidenceUpper,
-                            borderColor: 'transparent',
-                            backgroundColor: product.color + '15',
-                            borderWidth: 0,
-                            pointRadius: 0,
-                            tension: 0.3,
-                            fill: '+1'
-                        });
-                        datasets.push({
-                            label: product.name + ' (Lower)',
-                            data: forecastResult.confidenceLower,
-                            borderColor: 'transparent',
-                            backgroundColor: 'transparent',
-                            borderWidth: 0,
-                            pointRadius: 0,
-                            tension: 0.3,
-                            fill: false
-                        });
-                    }
-
-                    // Forecast line (dotted)
+                if (forecastResult.forecast.length > 1) {
                     datasets.push({
                         label: product.name + ' (Forecast)',
                         data: forecastResult.forecast,
-                        borderColor: product.color,
-                        borderWidth: 2,
-                        borderDash: [6, 4],
+                        borderColor: product.color + '80', // Semi-transparent
+                        borderWidth: 1.5,
+                        borderDash: [4, 3],
                         pointRadius: 0,
-                        tension: 0.3,
+                        tension: 0.4,
                         fill: false
                     });
                 }
             }
         });
 
-        // Update legend (only show non-forecast items)
+        // Update legend (compact, only main products)
         const legend = document.getElementById('trendLegend');
         if (legend) {
             legend.innerHTML = '';
             datasets.filter(ds => !ds.label.includes('Forecast')).forEach(ds => {
                 const item = document.createElement('div');
                 item.className = 'legend-item';
-                item.innerHTML = `
-                    <span class="legend-color" style="background-color: ${ds.borderColor}"></span>
-                    <span>${ds.label}</span>
-                `;
+                item.innerHTML = `<span class="legend-color" style="background-color: ${ds.borderColor}"></span><span>${ds.label}</span>`;
                 legend.appendChild(item);
             });
-            // Add forecast note
-            const note = document.createElement('div');
-            note.className = 'legend-item';
-            note.innerHTML = '<span style="border-bottom: 2px dashed var(--text-muted); width: 14px; display: inline-block;"></span><span>Forecast</span>';
-            legend.appendChild(note);
         }
 
         this.instances.trend = new Chart(ctx, {
