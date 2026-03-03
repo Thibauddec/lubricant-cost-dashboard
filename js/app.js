@@ -40,6 +40,16 @@ const App = {
                 range.end
             );
 
+            // Fetch news and sentiment
+            try {
+                const newsItems = await News.fetchNews();
+                News.render(newsItems);
+                Charts.sentimentMultiplier = News.getForecastAdjustment().multiplier;
+            } catch (newsError) {
+                console.warn('News fetch failed:', newsError);
+                Charts.sentimentMultiplier = 1;
+            }
+
             this.updateDashboard();
             UI.updateTimestamp();
 

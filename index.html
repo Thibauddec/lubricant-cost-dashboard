@@ -49,45 +49,125 @@
 
         <!-- KPI Cards -->
         <section class="kpi-section">
-            <div class="kpi-card">
+            <div class="kpi-card" data-factor="crude">
                 <div class="kpi-label">Crude Oil (Brent)</div>
-                <div class="kpi-value" id="crude-value">--</div>
-                <div class="kpi-change" id="crude-change">--</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="crude-value">--</div>
+                        <div class="kpi-change" id="crude-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="crude-spark"></canvas>
+                </div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-factor="wti">
                 <div class="kpi-label">Crude Oil (WTI)</div>
-                <div class="kpi-value" id="wti-value">--</div>
-                <div class="kpi-change" id="wti-change">--</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="wti-value">--</div>
+                        <div class="kpi-change" id="wti-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="wti-spark"></canvas>
+                </div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-factor="baseOil">
                 <div class="kpi-label">Base Oil PPI</div>
-                <div class="kpi-value" id="baseOil-value">--</div>
-                <div class="kpi-change" id="baseOil-change">--</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="baseOil-value">--</div>
+                        <div class="kpi-change" id="baseOil-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="baseOil-spark"></canvas>
+                </div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-factor="additives">
                 <div class="kpi-label">Chemical Additives</div>
-                <div class="kpi-value" id="additives-value">--</div>
-                <div class="kpi-change" id="additives-change">--</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="additives-value">--</div>
+                        <div class="kpi-change" id="additives-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="additives-spark"></canvas>
+                </div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-factor="transport">
                 <div class="kpi-label">Transport CPI</div>
-                <div class="kpi-value" id="transport-value">--</div>
-                <div class="kpi-change" id="transport-change">--</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="transport-value">--</div>
+                        <div class="kpi-change" id="transport-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="transport-spark"></canvas>
+                </div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-factor="gasoline">
                 <div class="kpi-label">Gasoline</div>
-                <div class="kpi-value" id="gasoline-value">--</div>
-                <div class="kpi-change" id="gasoline-change">--</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="gasoline-value">--</div>
+                        <div class="kpi-change" id="gasoline-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="gasoline-spark"></canvas>
+                </div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-factor="labor">
                 <div class="kpi-label">Manufacturing PPI</div>
-                <div class="kpi-value" id="labor-value">--</div>
-                <div class="kpi-change" id="labor-change">--</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="labor-value">--</div>
+                        <div class="kpi-change" id="labor-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="labor-spark"></canvas>
+                </div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-factor="packaging">
                 <div class="kpi-label">Packaging PPI</div>
-                <div class="kpi-value" id="packaging-value">--</div>
-                <div class="kpi-change" id="packaging-change">--</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="packaging-value">--</div>
+                        <div class="kpi-change" id="packaging-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="packaging-spark"></canvas>
+                </div>
+            </div>
+            <div class="kpi-card" data-factor="steel">
+                <div class="kpi-label">Steel (Sheet Metal)</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="steel-value">--</div>
+                        <div class="kpi-change" id="steel-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="steel-spark"></canvas>
+                </div>
+            </div>
+            <div class="kpi-card" data-factor="plastic">
+                <div class="kpi-label">Plastic Resin</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="plastic-value">--</div>
+                        <div class="kpi-change" id="plastic-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="plastic-spark"></canvas>
+                </div>
+            </div>
+            <div class="kpi-card" data-factor="laborCost">
+                <div class="kpi-label">Labor Cost</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="laborCost-value">--</div>
+                        <div class="kpi-change" id="laborCost-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="laborCost-spark"></canvas>
+                </div>
+            </div>
+            <div class="kpi-card" data-factor="inflation">
+                <div class="kpi-label">Inflation (CPI)</div>
+                <div class="kpi-main">
+                    <div class="kpi-values">
+                        <div class="kpi-value" id="inflation-value">--</div>
+                        <div class="kpi-change" id="inflation-change">--</div>
+                    </div>
+                    <canvas class="kpi-spark" id="inflation-spark"></canvas>
+                </div>
             </div>
         </section>
 
@@ -131,10 +211,26 @@
             <div class="chart-container chart-full">
                 <div class="chart-header">
                     <h3>Raw Cost Factors</h3>
-                    <span class="chart-subtitle">Base Oil, Crude, Additives, Transport, etc.</span>
+                    <span class="chart-subtitle">Base Oil, Crude, Additives, Transport, Steel, Plastic, etc.</span>
                 </div>
                 <div class="chart-body">
                     <canvas id="factorsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- News & Market Sentiment -->
+        <section class="news-section">
+            <div class="news-container">
+                <div class="news-header">
+                    <h3>Market News & Events</h3>
+                    <span class="sentiment-badge" id="sentimentBadge">Neutral</span>
+                </div>
+                <div class="news-content" id="newsContent">
+                    <p class="news-loading">Loading market news...</p>
+                </div>
+                <div class="forecast-note">
+                    <strong>Forecast Adjustment:</strong> <span id="forecastAdjustment">Based on current news sentiment</span>
                 </div>
             </div>
         </section>
@@ -168,6 +264,7 @@
     <script src="js/config.js"></script>
     <script src="js/fredApi.js"></script>
     <script src="js/frankfurterApi.js"></script>
+    <script src="js/news.js"></script>
     <script src="js/charts.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>

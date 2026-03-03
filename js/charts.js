@@ -5,6 +5,7 @@
 const Charts = {
     instances: {},
     costWeights: null,
+    sentimentMultiplier: 1, // Adjusted by news sentiment
 
     /**
      * Initialize charts module
@@ -61,14 +62,16 @@ const Charts = {
             y: historicalData[lastIndex].y
         });
 
-        // Generate future points (monthly)
+        // Generate future points (monthly) with sentiment adjustment
         for (let i = 1; i <= periods; i++) {
             const futureDate = new Date(lastDate);
             futureDate.setMonth(futureDate.getMonth() + i);
-            const predictedY = intercept + slope * (lastIndex + i);
+            let predictedY = intercept + slope * (lastIndex + i);
+            // Apply sentiment multiplier (compounds over time)
+            predictedY *= Math.pow(this.sentimentMultiplier, i * 0.5);
             forecast.push({
                 x: futureDate.toISOString().split('T')[0],
-                y: Math.max(0, predictedY).toFixed(2) // Ensure non-negative
+                y: Math.max(0, predictedY).toFixed(2)
             });
         }
 
@@ -406,7 +409,7 @@ const Charts = {
             if (totalWeight > 0 && yearAgoWeighted > 0) {
                 const yoyChange = ((currentWeighted - yearAgoWeighted) / yearAgoWeighted) * 100;
                 labels.push(product.name);
-                data.push(yoyChange.toFixed(2));
+                data.push(parseFloat(yoyChange.toFixed(2)));
                 colors.push(yoyChange >= 0 ? '#22c55e' : '#ef4444');
             }
         });

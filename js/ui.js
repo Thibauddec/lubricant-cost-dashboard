@@ -100,6 +100,48 @@ const UI = {
                 const previous = data[0].value;
                 const changePercent = ((current - previous) / previous) * 100;
                 this.updateKpiCard(meta.factor, current.toFixed(2), changePercent);
+                this.createSparkline(meta.factor, data, meta.color);
+            }
+        });
+    },
+
+    sparklineInstances: {},
+
+    createSparkline(factor, data, color) {
+        const canvas = document.getElementById(`${factor}-spark`);
+        if (!canvas || !data || data.length < 2) return;
+
+        // Destroy existing chart
+        if (this.sparklineInstances[factor]) {
+            this.sparklineInstances[factor].destroy();
+        }
+
+        // Sample data to last 20 points for sparkline
+        const sampled = data.slice(-20);
+        const values = sampled.map(d => d.value);
+
+        this.sparklineInstances[factor] = new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels: sampled.map((_, i) => i),
+                datasets: [{
+                    data: values,
+                    borderColor: color || '#3498db',
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    tension: 0.3,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                animation: false
             }
         });
     }

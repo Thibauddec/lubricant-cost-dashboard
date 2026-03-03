@@ -21,7 +21,11 @@ const Config = {
         TRANSPORT_CPI: 'CPIUTRNS',
         GASOLINE_RETAIL: 'GASREGW',
         MANUFACTURING_PPI: 'PCUOMFGOMFG',
-        PACKAGING_PPI: 'PCU322322'
+        PACKAGING_PPI: 'PCU322322',
+        STEEL_PPI: 'WPU101',
+        PLASTIC_PPI: 'WPU072',
+        LABOR_COST: 'CES0500000003',
+        INFLATION_CPI: 'CPIAUCSL'
     },
 
     // Series metadata for display
@@ -73,6 +77,30 @@ const Config = {
             factor: 'packaging',
             unit: 'Index',
             color: '#34495e'
+        },
+        WPU101: {
+            name: 'Steel (Sheet Metal)',
+            factor: 'steel',
+            unit: 'Index',
+            color: '#7f8c8d'
+        },
+        WPU072: {
+            name: 'Plastic Resin',
+            factor: 'plastic',
+            unit: 'Index',
+            color: '#16a085'
+        },
+        CES0500000003: {
+            name: 'Labor Cost',
+            factor: 'laborCost',
+            unit: '$/hour',
+            color: '#8e44ad'
+        },
+        CPIAUCSL: {
+            name: 'Inflation (CPI)',
+            factor: 'inflation',
+            unit: 'Index',
+            color: '#d35400'
         }
     },
 
