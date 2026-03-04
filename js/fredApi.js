@@ -38,17 +38,30 @@ const FredApi = {
 
         try {
             const baseUrl = `${Config.FRED_BASE_URL}?${params}`;
-            const url = Config.CORS_PROXY ? `${Config.CORS_PROXY}${encodeURIComponent(baseUrl)}` : baseUrl;
-            const response = await fetch(url);
+            let data = null;
+            let lastError = null;
 
-            if (!response.ok) {
-                if (response.status === 400) {
-                    throw new Error('Invalid API key or request');
+            // Try each proxy until one works
+            for (const proxy of Config.CORS_PROXIES) {
+                try {
+                    const proxyUrl = proxy.encode
+                        ? `${proxy.url}${encodeURIComponent(baseUrl)}`
+                        : `${proxy.url}${baseUrl}`;
+                    const response = await fetch(proxyUrl);
+
+                    if (response.ok) {
+                        data = await response.json();
+                        break;
+                    }
+                } catch (e) {
+                    lastError = e;
+                    continue;
                 }
-                throw new Error(`FRED API error: ${response.status}`);
             }
 
-            const data = await response.json();
+            if (!data) {
+                throw lastError || new Error('All proxies failed');
+            }
 
             if (data.error_message) {
                 throw new Error(data.error_message);
