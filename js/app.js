@@ -55,6 +55,7 @@ const App = {
 
         } catch (error) {
             console.error('Error loading data:', error);
+            UI.showError('Failed to load data. Please try refreshing the page.');
         } finally {
             UI.hideLoading();
         }

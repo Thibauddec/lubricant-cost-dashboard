@@ -125,6 +125,15 @@ const UI = {
         }
     },
 
+    showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-banner';
+        errorDiv.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()">✕</button>`;
+        errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#ef4444;color:white;padding:12px 20px;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:12px;';
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 10000);
+    },
+
     updateTimestamp() {
         if (this.elements.lastUpdated) {
             const now = new Date();
