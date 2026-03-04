@@ -38,7 +38,7 @@ const FredApi = {
 
         try {
             const baseUrl = `${Config.FRED_BASE_URL}?${params}`;
-            const url = Config.CORS_PROXY ? `${Config.CORS_PROXY}${baseUrl}` : baseUrl;
+            const url = Config.CORS_PROXY ? `${Config.CORS_PROXY}${encodeURIComponent(baseUrl)}` : baseUrl;
             const response = await fetch(url);
 
             if (!response.ok) {
