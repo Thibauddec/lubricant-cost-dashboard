@@ -1,6 +1,7 @@
 /**
  * News & Sentiment Analysis Module
  * Fetches news and adjusts forecasts based on sentiment
+ * Optimized with parallel fetching and timeout support
  */
 const News = {
     // Keywords that indicate price increases
@@ -21,8 +22,97 @@ const News = {
 
     currentSentiment: 0, // -1 to 1 scale
 
+    // Request timeout
+    REQUEST_TIMEOUT: 10000,
+
+    // CORS proxies for fallback
+    CORS_PROXIES: [
+        { url: 'https://corsproxy.io/?', encode: true },
+        { url: 'https://api.allorigins.win/raw?url=', encode: true }
+    ],
+
     /**
-     * Fetch news from free RSS feeds via a proxy
+     * Fetch with timeout
+     * @param {string} url - URL to fetch
+     * @param {number} timeout - Timeout in ms
+     * @returns {Promise<Response>}
+     */
+    async fetchWithTimeout(url, timeout = this.REQUEST_TIMEOUT) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            return response;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout');
+            }
+            throw error;
+        }
+    },
+
+    /**
+     * Try fetching a feed with proxy fallback
+     * @param {string} feedUrl - RSS feed URL
+     * @returns {Promise<string|null>}
+     */
+    async fetchFeedWithFallback(feedUrl) {
+        for (const proxy of this.CORS_PROXIES) {
+            try {
+                const proxyUrl = proxy.encode
+                    ? `${proxy.url}${encodeURIComponent(feedUrl)}`
+                    : `${proxy.url}${feedUrl}`;
+
+                const response = await this.fetchWithTimeout(proxyUrl);
+                if (response.ok) {
+                    return await response.text();
+                }
+            } catch (error) {
+                continue;
+            }
+        }
+        return null;
+    },
+
+    /**
+     * Parse RSS feed XML to news items
+     * @param {string} text - RSS XML text
+     * @param {string} feedName - Feed source name
+     * @returns {Array} News items
+     */
+    parseFeed(text, feedName) {
+        const items = [];
+        try {
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, 'text/xml');
+            const xmlItems = xml.querySelectorAll('item');
+
+            xmlItems.forEach((item, index) => {
+                if (index < 5) { // Limit to 5 items per feed
+                    const title = item.querySelector('title')?.textContent || '';
+                    const pubDate = item.querySelector('pubDate')?.textContent || '';
+                    const link = item.querySelector('link')?.textContent || '';
+
+                    items.push({
+                        title,
+                        date: new Date(pubDate),
+                        link,
+                        source: feedName,
+                        sentiment: this.analyzeSentiment(title)
+                    });
+                }
+            });
+        } catch (error) {
+            console.warn('Failed to parse feed:', feedName, error);
+        }
+        return items;
+    },
+
+    /**
+     * Fetch news from free RSS feeds via proxies - parallelized
      */
     async fetchNews() {
         const feeds = [
@@ -30,36 +120,24 @@ const News = {
             { name: 'Commodities', url: 'https://news.google.com/rss/search?q=crude+oil+commodities&hl=en-US&gl=US&ceid=US:en' }
         ];
 
-        const newsItems = [];
-        const corsProxy = 'https://corsproxy.io/?';
-
-        for (const feed of feeds) {
+        // Fetch all feeds in parallel
+        const feedPromises = feeds.map(async (feed) => {
             try {
-                const response = await fetch(corsProxy + encodeURIComponent(feed.url));
-                const text = await response.text();
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(text, 'text/xml');
-                const items = xml.querySelectorAll('item');
-
-                items.forEach((item, index) => {
-                    if (index < 5) { // Limit to 5 items per feed
-                        const title = item.querySelector('title')?.textContent || '';
-                        const pubDate = item.querySelector('pubDate')?.textContent || '';
-                        const link = item.querySelector('link')?.textContent || '';
-
-                        newsItems.push({
-                            title,
-                            date: new Date(pubDate),
-                            link,
-                            source: feed.name,
-                            sentiment: this.analyzeSentiment(title)
-                        });
-                    }
-                });
+                const text = await this.fetchFeedWithFallback(feed.url);
+                if (text) {
+                    return this.parseFeed(text, feed.name);
+                }
             } catch (error) {
                 console.warn('Failed to fetch news from', feed.name, error);
             }
-        }
+            return [];
+        });
+
+        // Wait for all feeds with a timeout
+        const results = await Promise.allSettled(feedPromises);
+        const newsItems = results
+            .filter(r => r.status === 'fulfilled')
+            .flatMap(r => r.value);
 
         // Sort by date, newest first
         newsItems.sort((a, b) => b.date - a.date);
@@ -165,7 +243,7 @@ const News = {
                 <div class="news-sentiment ${item.sentiment}"></div>
                 <div class="news-text">
                     <div class="news-title">${item.title}</div>
-                    <div class="news-meta">${item.source} • ${this.formatDate(item.date)}</div>
+                    <div class="news-meta">${item.source} - ${this.formatDate(item.date)}</div>
                 </div>
             </div>
         `).join('');

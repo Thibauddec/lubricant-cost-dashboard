@@ -310,7 +310,6 @@ a:hover { text-decoration: underline; }
     height: 100%;
     background: rgba(15, 23, 42, 0.95);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 999;
@@ -329,7 +328,7 @@ a:hover { text-decoration: underline; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.loading-overlay p { margin-top: 1rem; color: var(--text-secondary); font-size: 1rem; }
+.loading-overlay p { color: var(--text-secondary); font-size: 1rem; }
 
 /* Responsive - Tablet */
 @media (max-width: 1024px) {
@@ -581,3 +580,55 @@ a:hover { text-decoration: underline; }
 .forecast-note strong { color: var(--text-primary); }
 
 .hidden { display: none !important; }
+
+/* Loading Progress Bar */
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    max-width: 300px;
+    text-align: center;
+}
+
+.loading-progress-container {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-card);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.loading-progress-bar {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.loading-progress-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* Warning Button */
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+    border: none;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+}
+
+/* KPI Error State */
+.kpi-card.kpi-error {
+    opacity: 0.6;
+    border-color: var(--danger-color);
+}
+
+.kpi-card.kpi-error .kpi-value {
+    color: var(--text-muted);
+}

@@ -14,9 +14,12 @@ const UI = {
             dateRangeBtns: document.querySelectorAll('.range-btn'),
             productSelect: document.getElementById('productSelect'),
             refreshBtn: document.getElementById('refreshData'),
+            retryBtn: document.getElementById('retryFailed'),
             lastUpdated: document.getElementById('lastUpdated'),
             loadingOverlay: document.getElementById('loadingOverlay'),
-            loadingText: document.getElementById('loadingText')
+            loadingText: document.getElementById('loadingText'),
+            loadingProgress: document.getElementById('loadingProgress'),
+            loadingBar: document.getElementById('loadingBar')
         };
     },
 
@@ -47,6 +50,11 @@ const UI = {
         // Refresh button
         this.elements.refreshBtn?.addEventListener('click', () => {
             if (window.App) App.refreshData();
+        });
+
+        // Retry failed button
+        this.elements.retryBtn?.addEventListener('click', () => {
+            if (window.App) App.retryFailed();
         });
 
         // Scenario sliders
@@ -117,6 +125,43 @@ const UI = {
         if (this.elements.loadingText) {
             this.elements.loadingText.textContent = text;
         }
+        // Reset progress bar
+        if (this.elements.loadingBar) {
+            this.elements.loadingBar.style.width = '0%';
+        }
+        if (this.elements.loadingProgress) {
+            this.elements.loadingProgress.textContent = '';
+        }
+    },
+
+    /**
+     * Update loading progress with visual feedback
+     * @param {number} completed - Number of completed items
+     * @param {number} total - Total items
+     * @param {string} currentName - Name of current item being loaded
+     * @param {string} status - Status: 'fetching', 'success', 'failed', 'cached'
+     */
+    updateLoadingProgress(completed, total, currentName, status) {
+        const percent = Math.round((completed / total) * 100);
+
+        if (this.elements.loadingBar) {
+            this.elements.loadingBar.style.width = `${percent}%`;
+        }
+
+        if (this.elements.loadingProgress) {
+            this.elements.loadingProgress.textContent = `${completed}/${total}`;
+        }
+
+        if (this.elements.loadingText) {
+            let statusIcon = '';
+            switch (status) {
+                case 'fetching': statusIcon = '...'; break;
+                case 'success': statusIcon = ''; break;
+                case 'cached': statusIcon = ' (cached)'; break;
+                case 'failed': statusIcon = ' (failed)'; break;
+            }
+            this.elements.loadingText.textContent = `Loading ${currentName}${statusIcon}`;
+        }
     },
 
     hideLoading() {
@@ -125,19 +170,109 @@ const UI = {
         }
     },
 
+    /**
+     * Show error notification
+     * @param {string} message - Error message
+     */
     showError(message) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-banner';
-        errorDiv.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()">✕</button>`;
-        errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#ef4444;color:white;padding:12px 20px;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:12px;';
-        document.body.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 10000);
+        this.showNotification(message, 'error');
+    },
+
+    /**
+     * Show warning notification
+     * @param {string} message - Warning message
+     */
+    showWarning(message) {
+        this.showNotification(message, 'warning');
+    },
+
+    /**
+     * Show success notification
+     * @param {string} message - Success message
+     */
+    showSuccess(message) {
+        this.showNotification(message, 'success');
+    },
+
+    /**
+     * Generic notification display
+     * @param {string} message - Message to display
+     * @param {string} type - Type: 'error', 'warning', 'success'
+     */
+    showNotification(message, type = 'info') {
+        const colors = {
+            error: { bg: '#ef4444', text: 'white' },
+            warning: { bg: '#f59e0b', text: 'white' },
+            success: { bg: '#22c55e', text: 'white' },
+            info: { bg: '#3b82f6', text: 'white' }
+        };
+
+        const color = colors[type] || colors.info;
+
+        const notificationDiv = document.createElement('div');
+        notificationDiv.className = `notification notification-${type}`;
+        notificationDiv.innerHTML = `
+            <span>${message}</span>
+            ${type === 'warning' ? '<button class="retry-btn" onclick="App.retryFailed(); this.parentElement.remove();">Retry</button>' : ''}
+            <button class="close-btn" onclick="this.parentElement.remove();">x</button>
+        `;
+        notificationDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${color.bg};
+            color: ${color.text};
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 90%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 14px;
+        `;
+
+        // Style buttons
+        const buttons = notificationDiv.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.style.cssText = `
+                background: rgba(255,255,255,0.2);
+                border: none;
+                color: white;
+                padding: 4px 10px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+            `;
+        });
+
+        document.body.appendChild(notificationDiv);
+
+        // Auto-dismiss after 10 seconds (except for warnings which need user action)
+        if (type !== 'warning') {
+            setTimeout(() => {
+                if (notificationDiv.parentElement) {
+                    notificationDiv.remove();
+                }
+            }, 10000);
+        }
     },
 
     updateTimestamp() {
         if (this.elements.lastUpdated) {
             const now = new Date();
             this.elements.lastUpdated.textContent = `Updated: ${now.toLocaleString()}`;
+        }
+
+        // Show/hide retry button based on failed series
+        if (this.elements.retryBtn) {
+            const failedCount = FredApi.getFailedSeries().length;
+            this.elements.retryBtn.style.display = failedCount > 0 ? 'inline-block' : 'none';
+            if (failedCount > 0) {
+                this.elements.retryBtn.textContent = `Retry Failed (${failedCount})`;
+            }
         }
     },
 
@@ -148,9 +283,15 @@ const UI = {
     updateKpiCard(factor, current, changePercent) {
         const valueEl = document.getElementById(`${factor}-value`);
         const changeEl = document.getElementById(`${factor}-change`);
+        const cardEl = document.getElementById(`${factor}-card`) || valueEl?.closest('.kpi-card');
 
         if (valueEl && current !== null) {
             valueEl.textContent = current;
+            // Remove any error state
+            if (cardEl) cardEl.classList.remove('kpi-error');
+        } else if (valueEl) {
+            valueEl.textContent = 'N/A';
+            if (cardEl) cardEl.classList.add('kpi-error');
         }
 
         if (changeEl && changePercent !== null) {
@@ -158,18 +299,35 @@ const UI = {
             const sign = change >= 0 ? '+' : '';
             changeEl.textContent = `${sign}${change.toFixed(2)}%`;
             changeEl.className = `kpi-change ${change >= 0 ? 'positive' : 'negative'}`;
+        } else if (changeEl) {
+            changeEl.textContent = '--';
+            changeEl.className = 'kpi-change';
         }
     },
 
     updateAllKpis(seriesData) {
+        // First, mark all KPI cards as potentially empty
+        Object.values(Config.SERIES_META).forEach(meta => {
+            const valueEl = document.getElementById(`${meta.factor}-value`);
+            const changeEl = document.getElementById(`${meta.factor}-change`);
+            if (valueEl) valueEl.textContent = 'Loading...';
+            if (changeEl) changeEl.textContent = '--';
+        });
+
+        // Then update with actual data
         Object.entries(seriesData).forEach(([seriesId, data]) => {
             const meta = Config.SERIES_META[seriesId];
-            if (meta && data && data.length >= 2) {
-                const current = data[data.length - 1].value;
-                const previous = data[0].value;
-                const changePercent = ((current - previous) / previous) * 100;
-                this.updateKpiCard(meta.factor, current.toFixed(2), changePercent);
-                this.createSparkline(meta.factor, data, meta.color);
+            if (meta) {
+                if (data && data.length >= 2) {
+                    const current = data[data.length - 1].value;
+                    const previous = data[0].value;
+                    const changePercent = ((current - previous) / previous) * 100;
+                    this.updateKpiCard(meta.factor, current.toFixed(2), changePercent);
+                    this.createSparkline(meta.factor, data, meta.color);
+                } else {
+                    // Mark as unavailable
+                    this.updateKpiCard(meta.factor, null, null);
+                }
             }
         });
     },
@@ -178,11 +336,18 @@ const UI = {
 
     createSparkline(factor, data, color) {
         const canvas = document.getElementById(`${factor}-spark`);
-        if (!canvas || !data || data.length < 2) return;
+        if (!canvas) return;
 
         // Destroy existing chart
         if (this.sparklineInstances[factor]) {
             this.sparklineInstances[factor].destroy();
+        }
+
+        if (!data || data.length < 2) {
+            // Clear canvas for unavailable data
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            return;
         }
 
         // Sample data to last 20 points for sparkline
